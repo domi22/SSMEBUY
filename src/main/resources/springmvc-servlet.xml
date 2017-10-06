@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans.xsd  
+    http://www.springframework.org/schema/context  
+    http://www.springframework.org/schema/context/spring-context.xsd  
+    http://www.springframework.org/schema/mvc   
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- 扫描包，让注解生效,生成Bean组件 -->
+	<context:component-scan base-package="com.del.service,com.del.controller" />
+
+
+	<!-- 时间类型转换器 -->
+	<bean id="myConversionService"
+		class="org.springframework.context.support.ConversionServiceFactoryBean">
+		<property name="converters">
+			<list>
+				<bean class="com.del.tools.StringToDateConverter">
+					<constructor-arg type="java.lang.String" value="yyyy-MM-dd" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+
+
+
+	<!-- 批量创建处理器映射 -->
+	<mvc:annotation-driven>
+		<!-- 配置异步请求中文乱码全局处理 -->
+		<mvc:message-converters>
+			<!-- 将请求的信息转换为String，默认ISO-8859-1,改为utf8 -->
+			<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>application/json;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+			<!--阿里fastjson的中文支持 -->
+			<bean
+				class="com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html;charset=UTF-8</value>
+						<value>application/json</value>
+					</list>
+				</property>
+				<property name="features">
+					<list>
+						<!--fastjson日期格式的转换,配合实体类@jsonField注解 -->
+						<value>WriteDateUseDateFormat</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<!-- <mvc:annotation-driven conversion-service="myConversionService"/> -->
+
+	<!-- 静态资源文件 -->
+	<mvc:resources location="/statics/" mapping="statics/**"></mvc:resources>
+
+	<!-- 配置多视图解析器 -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/"></property>
+		<!-- <property name="suffix" value=".jsp"></property> -->
+	</bean>
+
+	<!-- 配置MapperScannerConfigurer批量产生映射器实现类,实现类中已经注入sqlSessionFactory,能get到session -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.del.dao"></property>
+	</bean>
+
+
+
+	<!-- 配置MultipartResolver，用于上传文件，使用spring的CommonsMultipartResolver -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"> 
+		<property name="maxUploadSize" value="5000000"/> <property name="defaultEncoding" 
+		value="UTF-8"/> </bean>
+
+
+</beans>

@@ -1,0 +1,105 @@
+package com.del.advice;
+import java.util.Arrays;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.springframework.stereotype.Component;
+
+@Component("userAdvice")
+public class UserAdvice {
+
+	/**
+	 * 前置通知
+	 */
+	public void before(JoinPoint jp)
+			throws Throwable {
+		System.out.println("前置");
+		        //拿到目标方法名
+				String methodName = jp.getSignature().getName();
+				//拿到目标方法参数
+				Object[] args = jp.getArgs();
+				String  names = "11";
+			String nn = "laizhizhuomian";
+			String nn3 = "laiziIDE";
+			String  ssSS="123";
+			String mma = "aall";
+				
+				//拿到目标类
+				Object target = jp.getTarget();	
+		System.out.println("前置增强执行的目标类是："+target+"方法是："+methodName+"参数数组是："+Arrays.toString(args));
+	}	
+   /**
+    * 后置通知
+    * @param returnValue
+    * @param m
+    * @param args
+    * @param target
+    * @throws Throwable
+    */
+	//public void afterReturning(Object returnValue, Method m, Object[] args, Object target) throws Throwable {
+	public void afterReturning(JoinPoint jp) throws Throwable { 
+		System.out.println("后置");
+		//拿到目标方法名
+		String methodName = jp.getSignature().getName();
+		//拿到目标方法参数
+		Object[] args = jp.getArgs();
+		//拿到目标类
+		Object target = jp.getTarget();	
+	
+	if(methodName.equals("login")){
+		  System.out.println("后置增强处理："+args[0]+",登录成功");
+	  }else if(methodName.equals("transfer")){
+		  System.out.println("后置增强处理："+"转账成功");
+	  }else{
+		System.out.println("后置增强处理："+target.getClass().getName()+" "+methodName+"被调用"+" 参数："+Arrays.toString(args));
+	 }
+	}
+	/**
+	 * 环绕通知	
+	 * @param invocation
+	 * @return
+	 * @throws Throwable
+	 */
+	public Object around(ProceedingJoinPoint  pjp) throws Throwable {
+		System.out.println("环绕");
+		Object[] args = pjp.getArgs();
+		String methodName = pjp.getSignature().getName();
+		System.out.println("环绕：前面要执行的...");
+		String obj = (String)pjp.proceed(); //目标方法	
+		if(obj!=null){
+			System.out.println("obj:"+obj);
+			
+		    System.out.println("环绕：之后要执行的代码...");
+		   if("manager/index.jsp".equals(obj)){
+			  
+			}
+		}
+		System.out.println("环绕拿到的参数为："+Arrays.toString(args)+"环绕的目标方法名："+methodName+"目标方法的返回值："+obj);
+		return obj;
+	}
+	
+	
+	/**
+	 * 最终增强
+	 * @param ex
+	 * @throws Throwable
+	 */
+	 public void after(JoinPoint jp) throws Throwable {
+		 System.out.println("最终");   
+		 //拿到目标方法名
+			String methodName = jp.getSignature().getName();
+			//拿到目标方法参数
+			Object[] args = jp.getArgs();
+			//拿到目标类
+			Object target = jp.getTarget();
+	        System.out.println("最终增强："+methodName+Arrays.toString(args)+target);
+	   }
+
+	/**
+	 * 异常通知
+	 * @param ex
+	 * @throws Throwable
+	 */
+	 public void error(JoinPoint jp) throws Throwable {
+	        System.out.println("出错啦："+jp.getSignature().getName());
+	   }
+}

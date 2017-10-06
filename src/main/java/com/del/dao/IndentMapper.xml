@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.IndentMapper">
+
+<!-- 根据userid删除订单记录 -->
+ <delete id="getDelIndent">
+    delete from indent where userid=#{userid}
+ </delete>
+ 
+ <!-- 根据indentid删除订单记录 -->
+ <delete id="getDelIndent2">
+    delete from indent where indentid=#{indentid}
+ </delete>
+ 
+ 
+ <resultMap id="statuslist"  type="T_status">
+         <id property="indentstatu" column="indentStatu"/>
+         <result property="statusname" column="statusName"/>
+ </resultMap>
+ 
+ <resultMap type="Indent" id="indentlist">
+   <id property="indentid" column="indentId"/>
+   <result property="userid" column="userId"/>
+   <result property="indentstatu" column="indentStatu"/>
+   <result property="indenttime" column="indentTime"/>
+   <collection property="userlist" ofType="User">
+        <id property="userid" column="userId"/>
+        <result property="address" column="address"/>
+        <result property="username" column="userName"/>
+        <result property="phone" column="phone"/>
+   </collection>
+   <collection property="statuslist" ofType="T_status" resultMap="statuslist"/> 
+ </resultMap>
+ 
+ <!-- 分页显示订单记录 -->
+ <select id="getAllIndent" resultMap="indentlist">
+    SELECT i.indentId,u.userName,u.phone,u.address,s.statusName 
+  FROM `user` u INNER JOIN indent i  ON u.userId=i.userId INNER JOIN t_status s ON s.indentStatu=i.indentStatu 
+LIMIT #{usecurrentPage},3
+ </select>
+ 
+ 
+ 
+ <!-- 分页显示指定条件的订单记录 -->
+ <select id="getSomIndent" resultMap="indentlist">
+    SELECT i.indentId,u.userName,u.phone,u.address,s.statusName 
+  FROM `user` u INNER JOIN indent i  ON u.userId=i.userId INNER JOIN t_status s ON s.indentStatu=i.indentStatu
+   where 1=1
+   <if test="#{indentid}!=null and #{indentid}!=''">
+      and indentId = #{indentid}
+   </if> 
+   <if test="#{username}!=null and #{username}!=''">
+      and username = #{username}
+   </if>
+   limit #{usecurrentPage},3
+ </select>
+ 
+ 
+ 
+ <!-- 查询总的订单记录 -->
+ <select id="getCountIndent" resultType="int">
+    select count(1) from indent 
+ </select>
+    
+</mapper>

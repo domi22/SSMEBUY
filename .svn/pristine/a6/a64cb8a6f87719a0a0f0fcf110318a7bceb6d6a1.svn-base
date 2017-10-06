@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.NewsMapper">
+
+<resultMap type="News" id="newslist">
+   <id property="newid" column="newId"/>
+   <result property="auther" column="auther"/>
+   <result property="content" column="content"/>
+   <result property="createtime" column="createTime"/>
+   <result property="newtitle" column="newTitle"/>
+</resultMap>
+
+<!-- 新闻列表 -->
+<select id="getAllNews" resultMap="newslist">
+    select *  from news limit 7
+</select>
+
+<!-- 新闻列表 总数 -->
+<select id="getCountNews" resultType="int">
+    select count(1)  from news
+</select>
+
+<!-- 根据newid查询new记录 -->
+<select id="getNew" resultType="News">
+    select *  from news where newid=#{newid}
+</select>
+
+<!-- 根据newi对象添加new记录 -->
+<insert id="getAdd" parameterType="News">
+    insert into news(newTitle,auther,content)values(#{newtitle},#{auther},#{content})
+</insert>
+
+<!-- 根据newid修改新闻记录 -->
+<update id="getUpd" parameterType="News">
+    update news set newtitle=#{newtitle},content=#{content} where newid=#{newid}
+</update>
+
+
+
+
+<!-- 分页显示新闻-->
+<select id="getPageNews" resultMap="newslist">
+    select *  from news limit #{currentPage},3
+</select>
+
+<!-- 根据newid删除新闻记录 -->
+<delete id="getDel">
+    delete from news where newid=#{newid}
+</delete>
+
+
+</mapper>

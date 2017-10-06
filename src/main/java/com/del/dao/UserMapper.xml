@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.del.dao.UserMapper">
+
+
+<resultMap type="Goods" id="goodslist" >
+   <id property="fatherid" column="fatherId"/>
+   <result property="goodid" column="goodId"/>
+   <result property="goodname" column="goodName"/>
+</resultMap>
+
+  <!-- 查询所有的商品 -->
+  <select id="getAllGoods" resultMap="goodslist">
+      select * from Goods
+  </select>
+  
+  
+  
+  <!-- 登录验证-->
+  <select id="getLoginUser" resultType="user">
+      select * from `user` where userName=#{userName} and pwd=#{passWord}
+  </select>
+  
+   <!-- 添加注册用户-->
+   <insert id="getRegister" parameterType="user">
+      insert into `user`(userName,pwd,address,phone,email,sex,hdpicpath,birthday,userRole)values(#{username},#{pwd},#{address},#{phone},#{email},#{sex},#{hdpicpath},#{birthday},1)
+   </insert>
+   
+   
+   <!-- map集合修改指定indentid的记录 -->
+   <update id="getUpdUser2" parameterType="Map">
+      UPDATE `user` SET userName=#{username},address=#{address},phone=#{phone} WHERE userId=(SELECT userId FROM indent WHERE indentid=#{indentid} )
+   </update>
+   
+   <!-- 验证用户名是否可用-->
+   <select id="getHasName" resultType="int">
+      select count(1) from `user` where userName=#{username}
+   </select>
+   
+   
+   <resultMap type="User" id="userlist" >
+   <id property="userid" column="userId"/>
+   <result property="address" column="address"/>
+   <result property="email" column="email"/>
+   <result property="birthday" column="birthday"/>
+   <result property="phone" column="phone"/>
+   <result property="pwd" column="pwd"/>
+   <result property="hdpicpath" column="hdpicpath"/>
+   <result property="sex" column="sex"/>
+   <result property="username" column="usreName"/>
+   <result property="userrole" column="userRole"/>
+   <result property="wkpicpath" column="wkpicpath"/>
+   </resultMap>
+   
+   <!--获取用户列表-->
+   <select id="getUserList" resultMap="userlist">
+      select * from `user`
+   </select>
+   
+    <!--g根据userid删除用户-->
+   <delete id="getDelUser">
+      delete from `user` where userId=#{userid}
+   </delete>
+   
+   <!--管理员添加新用户-->
+   <insert id="getAddUser" parameterType="User">
+      insert into `user`(userName,pwd,address,birthday,phone,email,sex,hdpicpath,userRole,wkpicpath)
+      values(#{username},#{pwd},#{address},#{birthday},#{phone},#{email},#{sex},#{hdpicpath},#{userrole},#{wkpicpath})
+   </insert>
+   
+   <!--管理员修改用户-->
+   <update id="getUpdUser" parameterType="User">
+      update `user` set userName=#{username},birthday=#{birthday},pwd=#{pwd},address=#{address},phone=#{phone},email=#{email},sex=#{sex},hdpicpath=#{hdpicpath},wkpicpath=#{wkpicpath} where userid=#{userid}
+   </update>
+
+   <!--根据userID查询用户信息-->
+   <select id="getUser" resultType="User">
+      select * from `user` where userid=#{userid}
+   </select>
+   
+   <!--根据goodidID删除商品信息-->
+   <delete id="getDelGoods">
+      delete from goods where goodid=#{goodid}
+   </delete>
+   
+   <!--根据goodID查询商品分类信息-->
+   <select id="getOneGood" resultType="Goods">
+      select * from goods where goodid=#{goodid}
+   </select>
+   
+   <!--根据good对象的goodID修改商品分类信息-->
+   <update id="getMdfGood" parameterType="Goods">
+      update goods set fatherId=#{fatherid},goodName=#{goodname} where goodid=#{goodid}
+   </update>
+   
+   <!--根据good对象添加商品分类信息-->
+   <insert id="getAddGood" parameterType="Goods">
+      insert into  goods(goodName,fatherId)values(#{goodname},#{fatherid})
+   </insert>
+   
+   
+   
+
+
+</mapper>

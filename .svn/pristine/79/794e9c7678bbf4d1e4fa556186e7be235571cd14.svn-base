@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.LiuyanMapper">
+
+<resultMap type="Liuyan" id="liuyanlist">
+   <id property="lyid" column="lyId"/>
+   <result property="lyauther" column="lyAuther"/>
+   <result property="lytime" column="lyTime"/>
+   <result property="lycontent" column="lyContent"/>
+   <result property="status" column="status"/>
+   <result property="lytitle" column="lytitle"/>
+</resultMap>
+
+
+<!-- 查询所有的留言列表 -->
+<select id="getAllLiuyan" resultMap="liuyanlist">
+     select * from liuyan limit #{currentPage},3
+</select>
+
+
+<!-- 查询留言总记录数 -->
+<select id="getCountLiuyan" resultType="int">
+     select count(1) from liuyan
+</select>
+
+<!-- 前台展示最近的3条留言-->
+<select id="getWebLiuyan" resultMap="liuyanlist">
+     select * from liuyan order by lyTime desc limit #{currentPage},3;
+</select> 
+
+<!-- 前台展示最近的3条留言-->
+<!-- <select id="getWebLiuyan" resultType="java.util.LinkedHashMap">
+     select * from liuyan order by lyTime desc limit 3;
+</select> -->
+
+
+
+<!-- 根据lyid删除ly记录 -->
+<delete id="getDelLiuyan" >
+     delete from liuyan where lyid=#{lyid}
+</delete>
+
+<!-- 添加ly记录 -->
+<insert id="getAddLiuyan"  parameterType="Liuyan">
+     insert into  liuyan(lyContent,lyAuther,lyTitle)
+     values(#{lycontent},#{lyauther},#{lytitle})
+</insert>
+
+
+
+
+
+</mapper>

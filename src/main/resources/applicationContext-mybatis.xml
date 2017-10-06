@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:aop="http://www.springframework.org/schema/aop" 
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/tx
+    http://www.springframework.org/schema/tx/spring-tx.xsd 
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd ">
+    
+   <!-- 开启注解支持,扫描基准包自动批量注册为Bean组件,添加命名空间,模板实例地址,扫描service层包 -->
+<context:component-scan base-package="com.del.dao,com.del.advice"/>
+
+<!-- 加载properties文件 -->
+<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+  <property name="locations">
+    <array><value>classpath:database.properties</value></array> 
+  </property>
+</bean>
+
+<!-- 配置数据源 -->
+<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+    <property name="driverClassName" value="${driver}"></property>
+    <property name="url" value="${url}"></property>
+    <property name="username" value="${user}"></property>
+    <property name="password" value="${password}"></property>
+    <property name="initialSize" value="${initialSize}"/>
+    <property name="maxActive" value="${maxActive}"/>
+    <property name="maxIdle" value="${maxIdle}"/>
+    <property name="minIdle" value="${minIdle}"/>
+    <property name="maxWait" value="${maxWait}"/>
+</bean>
+
+<!-- 配置sqlSessionFactory整合MyBatis的Bean组件 -->
+<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource"></property>
+    <property name="configLocation" value="classpath:mybatis-config.xml"></property>
+    <property name="typeAliasesPackage" value="com.del.pojo"></property>
+    <property name="mapperLocations">
+     <list>
+       <value>classpath:com/del/dao/UserMapper.xml</value>
+       <value>classpath:com/del/dao/ShangpMapper.xml</value>
+        <value>classpath:com/del/dao/NoticeMapper.xml</value>
+        <value>classpath:com/del/dao/NewsMapper.xml</value>
+        <value>classpath:com/del/dao/IndentMapper.xml</value>
+         <value>classpath:com/del/dao/DetailsMapper.xml</value>
+          <value>classpath:com/del/dao/T_statusMapper.xml</value>
+     </list>
+    </property>
+</bean>
+
+
+
+<!-- 配置MapperScannerConfigurer批量产生映射器实现类,实现类中已经注入sqlSessionFactory,能get到session-->
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+    <property name="basePackage" value="com.del.dao,com.del.advice,com.del.tools"></property>
+</bean>
+
+<!-- 配置事务管理器 -->
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+   <property name="dataSource" ref="dataSource"/>
+</bean>
+
+<bean id="userAdvice"  class="com.del.advice.UserAdvice"/>
+
+
+
+<!-- 配置事务增强 -->
+<tx:advice id="txAdvice" transaction-manager="txManager">
+    	<tx:attributes>
+    		<tx:method name="*Adel" propagation="REQUIRED"/>
+    	</tx:attributes>    	
+</tx:advice>
+<!-- 配置事务切面 -->
+<aop:config>
+    <aop:pointcut expression="execution(* com.del.service.*.*(..))" id="TXPoint"/>
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="TXPoint"/>
+</aop:config>
+
+<!--配置切面通知  -->
+<aop:config>
+	    <aop:pointcut   expression="execution (* com.del.service.*.*Login(..))" id="AOPpointcut"/>
+		<aop:aspect id="myAspect" ref="userAdvice">
+		    <aop:after method="after" pointcut-ref="AOPpointcut"/>
+		    <aop:after-returning method="afterReturning" pointcut-ref="AOPpointcut"/>
+		    <aop:around method="around" pointcut-ref="AOPpointcut"/> 
+			<aop:before method="before" pointcut-ref="AOPpointcut"/>
+		</aop:aspect>
+</aop:config>
+
+<!-- jedis连接池配置-->
+<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">  
+    <property name="maxTotal" value="1000"/> <!-- 控制一个pool可分配多少个jedis实例 -->  
+    <property name="maxIdle" value="200" />   <!-- 控制一个pool最多有多少个状态为idle(空闲)的jedis实例 -->  
+    <property name="maxWaitMillis" value="2000" />  <!-- 表示当borrow一个jedis实例时，最大的等待时间，如果超过等待时间，则直接抛出JedisConnectionException -->  
+    <property name="testOnBorrow" value="true" /> <!-- 在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的 -->  
+</bean>  
+
+<!-- 连接jedis服务器 -->
+<bean id="jedisPool" class="redis.clients.jedis.JedisPool" destroy-method="destroy">
+    <constructor-arg ref="jedisPoolConfig"/>
+    <constructor-arg value="127.0.0.1"/>
+    <constructor-arg value="6379"/>
+</bean>
+
+<!-- 配置redisAPI -->
+<bean id="redisAPI" class="com.del.tools.RedisAPI">
+     <property name="jedisPool" ref="jedisPool"/>
+</bean>
+
+
+
+   
+</beans>

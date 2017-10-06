@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.ShangpMapper">
+
+   <resultMap id="shangpList" type="Shangp">
+      <id property="shangid" column="shangId"/>
+      <result property="shangname" column="shangName"/>
+      <result property="goodid" column="goodId"/>
+      <result property="price" column="price"/>
+      <result property="picpath" column="picpath"/>
+      <result property="restcount" column="restCount"/>
+      <result property="shangdic" column="shangDic"/>
+   </resultMap>
+   
+   <!-- 获取首页8条商品信息 -->
+   <select id="getShangp8" resultMap="shangpList">
+      select * from shangp limit 8
+   </select>
+   
+   <!-- 根据goodid分页查询商品 -->
+   <select id="getProductShangp" resultMap="shangpList" parameterType="map">
+      select * from shangp where goodId=#{goodid} limit #{usecurrentPage},3
+   </select>
+   
+   <!-- 根据fatherid分页查询商品 -->
+   <select id="getFatherShangp" resultMap="shangpList" parameterType="map">
+      select * from shangp where goodid in(select goodid from goods where fatherid=#{fatherid}) limit #{usecurrentPage},8
+   </select>
+   
+   
+   
+    <!-- 查询商品总记录数 -->
+   <select id="getAllShangp" resultType="int">
+      select count(1) from shangp
+   </select>
+   
+   
+   <!-- 分页查询所有商品 -->
+   <select id="getShangp" resultMap="shangpList">
+      select * from shangp limit #{usecurrentPage},3
+   </select>
+   
+   <!-- 根据goodid查询商品的总记录数 -->
+    <select id="getShangpCount" resultType="int" parameterType="int">
+      select count(1) from shangp where goodId=#{goodid} 
+   </select>
+   
+   <!-- 根据fatherid查询商品的总记录数 -->
+    <select id="getfatherCount" resultType="int" parameterType="int">
+      select count(1) from shangp where goodId=#{fatherid} 
+   </select>
+   
+   <!-- 根据shangid查询单件商品信息 -->
+   <select id="getOneShangp" resultType="Shangp" parameterType="int">
+      select * from shangp where shangId=#{shangid} 
+   </select>
+   
+   <!-- 根据shangid和userid判断购物车是否存在该商品 -->
+   <select id="getHasBuyCar" resultType="int" >
+      select count(1) from buycar where userid=#{userid} and shangid=#{shangid}  
+   </select>
+   
+    <!-- 新增1件商品信息 -->
+   <insert id="getAddShangp" parameterType="Shangp"  >
+        insert into Shangp(shangName,goodId,price,picpath,restCount,shangDic)
+        values(#{shangname},#{goodid},#{price},#{picpath},#{restcount},#{shangdic}) 
+   </insert>
+   
+    <!-- 修改商品信息 -->
+   <update id="getUpdShangp" parameterType="Shangp"  >
+        update shangp set shangName=#{shangname},goodId=#{goodid},price=#{price},restCount=#{restcount},shangDic=#{shangdic},picpath=#{picpath} where shangid=#{shangid}
+   </update>
+   
+    <!-- 删除商品记录 -->
+   <delete id="getDelShangp">
+        delete from shangp where shangid=#{shangid}
+   </delete>
+   
+    <!-- 删除商品记录 -->
+   <delete id="getDelgoodid">
+        delete from shangp where goodid=#{goodid}
+   </delete>
+   
+   
+
+
+
+</mapper>

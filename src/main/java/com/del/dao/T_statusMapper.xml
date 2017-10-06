@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.T_statusMapper">
+
+
+<!-- 根据indentID修改状态表的信息 -->
+<update id="getUpdStatus">
+   update t_status set statusname=#{statusname} where indentStatu=(select indentStatu from indent where indentId=#{indentid})
+</update>
+
+
+</mapper>

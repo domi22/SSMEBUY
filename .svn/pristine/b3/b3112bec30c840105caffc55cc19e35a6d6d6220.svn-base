@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.del.dao.BuyCarMapper">
+
+<resultMap type="Shangp" id="shangplist">
+   <id property="shangid" column="shangId"></id>
+   <result property="goodid" column="goodId"></result>
+   <result property="picpath" column="picpath"></result>
+   <result property="price" column="price"></result>
+   <result property="restcount" column="restCount"></result>
+   <result property="shangdic" column="shangDic"></result>
+   <result property="shangname" column="shangName"></result>
+</resultMap>
+
+<resultMap type="BuyCar" id="burcarlist">
+<id property="carid" column="carId"></id>
+<result property="carcount" column="carCount"></result>
+<result property="shangid" column="shangId"></result>
+<result property="userid" column="userId"></result>
+<collection property="list" ofType="Shangp" resultMap="shangplist"></collection>
+</resultMap>
+
+<!-- 根据用户ID查询购物车列表 -->
+<select id="getBuyCarList" resultMap="burcarlist">
+ SELECT b.carCount,s.shangName,s.price,s.picpath,b.carId,b.userId,s.shangId FROM buycar b, shangp s WHERE b.shangId=s.shangId AND b.userId=#{userid}
+</select>
+
+<!-- 根据用户编号和carid删除购物车记录 -->
+<delete id="getDelBuyCar">
+     delete from buycar where carid=#{carid} and userid=#{userid}
+</delete>
+
+<!-- 根据用户编号删除购物车记录 -->
+<delete id="getDelBuyCar1">
+     delete from buycar where userid=#{userid}
+</delete>
+
+<!-- 根据shangid删除购物车记录 -->
+<delete id="getDelBuyCar2">
+     delete from buycar where shangid=#{shangid}
+</delete>
+
+
+
+<!-- 根据shangid和userid判断购物车是否存在该商品 -->
+<select id="getHasBuyCar" resultType="BuyCar">
+     select *  from buycar where userid=#{userid} and shangid=#{shangid}
+</select>
+
+<!--根据shangid和userid给购物车数量加1-->
+<update id="getAddCount">
+     update buycar set carCount=carCount+1 where userid=#{userid} and shangid=#{shangid}
+</update>
+
+<!-- 插入一件商品到购物车 -->
+<insert id="getAddBuyCar" parameterType="BuyCar">
+     insert into buycar(userId,shangId,carCount) values(#{userid},#{shangid},#{carcount})
+</insert>
+
+
+
+
+
+</mapper>

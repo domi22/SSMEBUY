@@ -1,0 +1,126 @@
+package com.del.controller;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.del.pojo.BuyCar;
+import com.del.pojo.User;
+import com.del.service.BuyCarService;
+import com.del.tools.RedisAPI;
+
+@Controller
+@RequestMapping("/buycar")
+public class BuyCarController {
+
+@Resource(name="buyCarService")
+private BuyCarService  buyCarService;
+
+@Resource(name="redisAPI")
+private RedisAPI  redisAPI;
+
+	 /*
+	 *  根据userID查询购物车列表
+	 *  使用redis缓存
+	 */
+	@RequestMapping(value="/list")	
+	public ModelAndView doBuyCarList(HttpSession session){		
+		
+		ModelAndView madnv = new ModelAndView();
+		User user = (User)session.getAttribute("hasLogin");
+		if(user!=null){
+			//先判斷redis裡面有沒有值
+			
+			List<BuyCar> buycarlist1 = null;
+			if (!redisAPI.exist("carlist"+user.getUserid())) {
+				
+				buycarlist1 = buyCarService.findBuyCarList(user.getUserid());	
+				
+				String buycarlist = JSON.toJSONString(buycarlist1,true);
+				
+				redisAPI.set("carlist"+user.getUserid(), buycarlist);
+				madnv.addObject("buycarlist", buycarlist1);
+				System.out.println("buycarlist====="+buycarlist1);
+				System.out.println("FROM DB==>");
+				
+			}else{
+				  String buycarlist = redisAPI.get("carlist"+user.getUserid());
+				
+				if (buycarlist!=null && !"".equals(buycarlist)) {
+					 buycarlist1 =JSON.parseArray(buycarlist, BuyCar.class);
+					madnv.addObject("buycarlist", buycarlist1);
+					System.out.println("buycarlist====="+buycarlist);
+					System.out.println("FROM REDIS==>");
+				}else{
+					System.out.println("error==>");
+				}
+
+			}
+		}
+		madnv.setViewName("buycar/shopping.jsp");
+		
+		return madnv;
+	}
+	
+	
+	
+	/*
+	 *  根据用户编号和carid删除购物车记录
+	 */
+	@RequestMapping(value="/del",params={"userid","carid"})	
+	public String doDelBuyCar(@RequestParam(value="userid")int userid,
+			                  @RequestParam(value="carid")int carid){
+	  
+		buyCarService.findDelBuyCar(userid, carid);
+		
+		return "redirect:/buycar/list";
+	}
+	
+	
+	/*
+	 * 根据shangid和userid判断购物车是否存在该商品
+	 */
+	@RequestMapping(value="/addcar",params="shangid")
+	@ResponseBody
+	public Object doAddBuyCar(@RequestParam(value="shangid")int shangid,HttpSession session){
+		
+		//response.setContentType("application/json;charset=UTF-8");
+		//判断用户是否登录
+		User user = (User)session.getAttribute("hasLogin");
+		if(user!=null){
+			
+			//查询购物车是否存在该商品
+			BuyCar buyCar = buyCarService.findHasBuyCar(user.getUserid(), shangid);
+			if(buyCar!=null){
+
+				if(buyCarService.findAddCount(user.getUserid(), shangid)>0){
+					return JSON.toJSONString("[添加成功]");	
+				}
+				
+			}else{
+				BuyCar buyCarnew = new BuyCar();
+				buyCarnew.setShangid(shangid);
+				buyCarnew.setUserid(user.getUserid());
+				buyCarnew.setCarcount(1);
+				if(buyCarService.findAddBuyCar(buyCarnew)>0){
+					return JSON.toJSONString("[添加成功]");
+				}
+			}
+			
+		 }
+		
+		return JSON.toJSONString("[请先登录]");
+	 }
+	
+	
+	
+	
+}
